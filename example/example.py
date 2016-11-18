@@ -1,9 +1,9 @@
-import logger
+import logfiler.logfiler as logfiler
 import os
 
 # create a log instance
 # if you omit the params then it will create the logger.txt file in the directory the script is run from
-log = logger.Log(directory='', name='testing', usedatesinfilename=True)
+log = logfiler.Log(directory='', name='testing', usedatesinfilename=True)
 
 # get the log file for writing to
 logFile = log.get_log_file()
@@ -20,7 +20,7 @@ logFile.write(
 logFile.close()
 
 # create a log instance
-log2 = logger.Log(directory=os.getcwd() + '\\test\\')
+log2 = logfiler.Log(directory=os.getcwd() + '\\test\\')
 
 # write to it
 log2.warning('Water needed!')

@@ -1,4 +1,4 @@
-# logger
+# logfiler
 My first Python 3 venture, create named logs in a given directory, with a given name and write to them
 
 ## Usage ##

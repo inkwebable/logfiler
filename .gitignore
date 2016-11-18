@@ -95,4 +95,4 @@ ENV/
 *.ini
 
 # txt
-.txt
+*.txt
