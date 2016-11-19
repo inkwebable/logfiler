@@ -1,10 +1,20 @@
 # logfiler
 My first Python 3 venture, create named logs in a given directory, with a given name and write to them
 
+## Install ##
+To install via PIP
+```
+pip install git+git://github.com/inkwebable/logfiler.git
+```
+
 ## Usage ##
 
-Create and fetch a Log
-```logFile = log.get_log_file()```
+```
+import logfiler.logfiler
+```
+
+Create object from Log class
+```log = logfiler.logfiler.Log()```
 
 Methods for writing to the log
 ``` Python
