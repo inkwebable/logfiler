@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
     name='logfiler',
     version='1.0',
-    packages=[''],
+    packages=['logfiler'],
     url='https://github.com/inkwebable/logfiler',
     license='MIT License',
     author='thien.nguyen',
