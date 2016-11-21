@@ -10,11 +10,11 @@ pip install git+git://github.com/inkwebable/logfiler.git
 ## Usage ##
 
 ```
-import logfiler.logfiler
+from logfiler.logfiler import Log
 ```
 
 Create object from Log class
-```log = logfiler.logfiler.Log()```
+```log = Log()```
 
 Methods for writing to the log
 ``` Python
