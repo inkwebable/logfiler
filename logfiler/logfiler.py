@@ -1,6 +1,7 @@
 import os
 import time
 
+
 class Log:
     def __init__(self, directory: str = '', name: str = 'logger', usedatesinfilename: bool = False):
         self.__usedatesinfilename = usedatesinfilename
