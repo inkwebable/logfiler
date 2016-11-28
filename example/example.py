@@ -28,3 +28,7 @@ log2.critical('Food needed!')
 log2.error('No energy')
 log2.debug('Missing resource')
 log2.info('Refueling')
+
+log3 = logfiler.Log(directory='', name='move', log_date_format='%y-%m-%d', file_ext='log', usedatesinfilename=True)
+
+log3.info('ass hat')
