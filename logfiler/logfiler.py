@@ -3,22 +3,23 @@ import time
 
 
 class Log:
-    def __init__(self, file_ext: str = 'txt', filename_date_format: str ='%d-%m-%y', log_date_format: str ='%d-%m-%y', directory: str = '', name: str = 'logger', usedatesinfilename: bool = False):
-        self.__usedatesinfilename = usedatesinfilename
+    def __init__(self, file_ext: str = 'txt', filename_date_format: str = '%d-%m-%y', log_date_format: str = '%d-%m-%y',
+                 directory: str = '', name: str = 'logger', use_dates_in_filename: bool = False):
+        self.__use_dates_in_filename = use_dates_in_filename
         self.__directory = directory
         self.__name = name
         self.__file_ext = file_ext
         self.__filename_date_format = filename_date_format
         self.__log_date_format = log_date_format
         self.current_time = time.strftime("%H:%M:%S")
-        self.osdate = time.strftime(filename_date_format)
+        self.os_date = time.strftime(filename_date_format)
         self.date = time.strftime(log_date_format)
         self.init()
 
     def has_log_file(self):
         try:
-            if self.__usedatesinfilename is True:
-                if os.path.isfile(self.__directory + self.__name + "-" + self.osdate + '.' + self.__file_ext):
+            if self.__use_dates_in_filename is True:
+                if os.path.isfile(self.__directory + self.__name + "-" + self.os_date + '.' + self.__file_ext):
                     return True
                 else:
                     return False
@@ -33,27 +34,27 @@ class Log:
     def __make_log_file(self):
         try:
             # if got file return it else make new one and return that
-            if self.__usedatesinfilename is True:
-                thelogfile = open(self.__directory + self.__name + "-" + self.osdate + '.' + self.__file_ext, 'w+')
+            if self.__use_dates_in_filename is True:
+                the_log_file = open(self.__directory + self.__name + "-" + self.os_date + '.' + self.__file_ext, 'w+')
             else:
-                thelogfile = open(self.__directory + self.__name + '.' + self.__file_ext, 'w+')
+                the_log_file = open(self.__directory + self.__name + '.' + self.__file_ext, 'w+')
 
-            thelogfile.write('Created log file at ' + self.current_time + " on " + self.osdate)
-            thelogfile.close()
+            the_log_file.write('Created log file at ' + self.current_time + " on " + self.os_date)
+            the_log_file.close()
 
-            return thelogfile
+            return the_log_file
         except Exception as e:
             print('error')
             raise
 
     def get_log_file(self):
         try:
-            if self.__usedatesinfilename is True:
-                thelogfile = open(self.__directory + self.__name + "-" + self.osdate + '.' + self.__file_ext, 'a')
+            if self.__use_dates_in_filename is True:
+                the_log_file = open(self.__directory + self.__name + "-" + self.os_date + '.' + self.__file_ext, 'a')
             else:
-                thelogfile = open(self.__directory + self.__name + '.txt', 'a')
+                the_log_file = open(self.__directory + self.__name + '.txt', 'a')
 
-            return thelogfile
+            return the_log_file
         except Exception as e:
             raise
 

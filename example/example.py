@@ -3,7 +3,7 @@ import os
 
 # create a log instance
 # if you omit the params then it will create the logger.txt file in the directory the script is run from
-log = logfiler.Log(directory='', name='testing', usedatesinfilename=True)
+log = logfiler.Log(directory='', name='testing', use_dates_in_filename=True)
 
 # get the log file for writing to
 logFile = log.get_log_file()
@@ -29,6 +29,6 @@ log2.error('No energy')
 log2.debug('Missing resource')
 log2.info('Refueling')
 
-log3 = logfiler.Log(directory='', name='move', log_date_format='%y-%m-%d', file_ext='log', usedatesinfilename=True)
+log3 = logfiler.Log(directory='', name='move', log_date_format='%y-%m-%d', file_ext='log', use_dates_in_filename=True)
 
 log3.info('ass hat')
