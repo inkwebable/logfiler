@@ -6,7 +6,7 @@ setup(
     packages=['logfiler'],
     url='https://github.com/inkwebable/logfiler',
     license='MIT License',
-    author='thien.nguyen',
+    author='Thien Nguyen',
     author_email='thien@a-web-developer.co.uk',
-    description='My first Python 3 venture, create named logs in a given directory, with a given name and write to them'
+    description='Create log files in a given directory, with a given name in a given data format + more... '
 )
