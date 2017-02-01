@@ -12,8 +12,8 @@ class Log:
             name: str = 'log',
             use_dates_in_filename: bool = True,
             size_limit: int = 0,
-            max_files_in_day: int = 100,
-            start_log_from: int = 2,
+            max_files_in_day: int = 0,
+            start_log_from: int = 0,
             date_first: bool = True
     ):
         self.use_dates_in_filename = use_dates_in_filename
@@ -30,23 +30,37 @@ class Log:
         self.start_log_from = start_log_from
         self.log_it_count = 0
         self.date_first = date_first
+        self.last_log_index = None
+        self.current_log_name = None
+        self.files = []
         self.init()
 
     def __combined_file_name(self):
         """
-        Makes the file directory and name
-        :return:
+        Makes the file directory and name and returns full system string
+        :return str:
         """
-        if self.date_first is True:
-            if self.use_dates_in_filename is True:
-                return self.directory + self.os_date + "-" + self.name + '.' + self.file_ext
+
+        # determine if the log file name needs the iteration attached to the filename
+        if self.log_it_count > 0:
+            if self.last_log_index is None:
+                filename = self.name + '-' + str(self.start_log_from)
             else:
-                return self.directory + self.name + '.' + self.file_ext
+                filename = self.name + '-' + str(self.last_log_index + 1)
         else:
-            if self.use_dates_in_filename is True:
-                return self.directory + self.name + "-" + self.os_date + '.' + self.file_ext
+            if self.start_log_from > 0:
+                filename = self.name + '-' + str(self.start_log_from)
             else:
-                return self.directory + self.name + '.' + self.file_ext
+                filename = self.name
+
+        if self.use_dates_in_filename is True:
+            if self.date_first is True:
+                return os.path.join(self.directory, self.os_date + "-" + filename + '.' + self.file_ext)
+            else:
+                filename = filename + "-" + self.os_date + '.' + self.file_ext
+                return os.path.join(self.directory, filename)
+        else:
+            return os.path.join(self.directory, filename + '.' + self.file_ext)
 
     def _has_log_file(self):
         """
@@ -68,23 +82,26 @@ class Log:
         :return:
         """
         try:
+            self.current_log_name = self.__combined_file_name()
             # if got file return it else make new one and return that
-            the_log_file = open(self.__combined_file_name(), 'w+')
+            the_log_file = open(self.current_log_name, 'w+')
             the_log_file.write('Created log file at ' + self.current_time + " on " + self.os_date)
             the_log_file.close()
 
             return the_log_file
         except Exception as e:
-            print('error')
             raise
 
-    def get_log_file(self):
+    def _get_log_file(self):
         """
-        Gets the log file
+        Returns an open log file for appending to
         :return:
         """
         try:
-            the_log_file = open(self.__combined_file_name(), 'a')
+            if self.current_log_name is None:
+                the_log_file = open(self.__combined_file_name(), 'a')
+            else:
+                the_log_file = open(self.current_log_name, 'a')
 
             return the_log_file
         except Exception as e:
@@ -99,11 +116,9 @@ class Log:
             if not os.path.exists(self.directory):
                 try:
                     os.mkdir(self.directory)
-                    print('made dir')
                 except Exception as e:
                     raise e
             else:
-                print('path exists')
                 return True
 
     def get_file_size(self):
@@ -111,8 +126,14 @@ class Log:
         Returns the file size in bytes
         :return int:
         """
+        # print('get file size')
         try:
-            size = os.path.getsize(self.__combined_file_name())
+            if self.current_log_name is None:
+                # print('current_log_name is none Checking size of ' + self.__combined_file_name())
+                size = os.path.getsize(self.__combined_file_name())
+            else:
+                # print('Checking size of current log ' + self.current_log_name)
+                size = os.path.getsize(self.current_log_name)
 
             return int(size)
 
@@ -125,23 +146,52 @@ class Log:
         :return bool:
         """
         if self.size_limit > 0:
-            kb = (self.get_file_size() / 1024)
-            mb = kb / 1024
+            kb = (self.get_file_size() / 1023)
+            mb = kb / 1023
             if mb >= self.size_limit:
                 return False
 
-        # print('file_size_ok no answer')
+        # print('file_size_ok')
         return True
 
     # Log writing methods
-    def writer(self, file, message_type, message: str):
+    def writer(self, message_type='[CUSTOM]', message: str = ''):
         """
-        Writes the given messafe type to the log
-        :param file:
+        Writes the given message type and message to the log
         :param message_type:
         :param message:
         :return:
         """
+
+        # if last_log_index or current_log_name is none, assume self.name is current & only file
+        # if it's size is not ok ( checks the original log file! )
+        if self.file_size_ok() is False:
+            if self.max_files_in_day > 0:
+                # determine if there are other logs files besides the original
+                if self.get_last_log_index() is False:
+                    # only one log file
+                    return False
+                else:
+                    # we have log files with indexes in the filename and current_log_name has be set to the most recent
+                    # check file size (this now does checks with current_log_name)
+                    if self.file_size_ok() is False:
+                        # if size not ok and max file limit has not been reached
+                        if self.max_files_in_day is not 0 and self.max_files_in_day <= self.log_it_count:
+                            return False
+                        else:
+                            if self.max_files_in_day is 0:
+                                # return false as the file has hit max limit
+                                return False
+                            else:
+                                # at this point, last_log_index is set, current_log_name is populated
+                                self.__make_log_file()
+            else:
+                return False
+
+        file = self._get_log_file()
+
+        self.current_time = time.strftime("%H:%M:%S")
+
         file.write(
             '\n' +
             self.date + ", " +
@@ -152,17 +202,15 @@ class Log:
 
         file.close()
 
+        return True
+
     def critical(self, message: str):
         """
         Write a [critcal] message to the log
         :param message:
         :return:
         """
-        if self.file_size_ok() is False:
-            self.make_new_file()
-
-        temp = self.get_log_file()
-        self.writer(temp, '[CRITICAL]', message)
+        return self.writer( '[CRITICAL]', message)
 
     def warning(self, message: str):
         """
@@ -170,11 +218,7 @@ class Log:
         :param message:
         :return:
         """
-        if self.file_size_ok() is False:
-            self.make_new_file()
-
-        temp = self.get_log_file()
-        self.writer(temp, '[WARNING]', message)
+        return self.writer('[WARNING]', message)
 
     def info(self, message: str):
         """
@@ -182,11 +226,7 @@ class Log:
         :param message:
         :return:
         """
-        if self.file_size_ok() is False:
-            self.make_new_file()
-
-        temp = self.get_log_file()
-        self.writer(temp, '[INFO]', message)
+        return self.writer('[INFO]', message)
 
     def debug(self, message: str):
         """
@@ -194,11 +234,7 @@ class Log:
         :param message:
         :return:
         """
-        if self.file_size_ok() is False:
-            self.make_new_file()
-
-        temp = self.get_log_file()
-        self.writer(temp, '[DEBUG]', message)
+        return self.writer('[DEBUG]', message)
 
     def error(self, message: str):
         """
@@ -206,59 +242,67 @@ class Log:
         :param message:
         :return:
         """
-        if self.file_size_ok() is False:
-            self.make_new_file()
+        return self.writer( '[ERROR]', message)
 
-        temp = self.get_log_file()
-        self.writer(temp, '[ERROR]', message)
-
-    def make_new_file(self):
+    def determine_path(self):
         """
-        Makes a new log file, numbered based on existing logs
+        Gets the correct file system path based on the object directory string
         :return:
         """
 
-        # get original file name, no numbers
-        original_name_list = re.findall("[^0-9]", self.name)
-
-        # get log number - empty unless more than 1 log file
-        # original_nums_list = re.findall("[0-9]+", self.name)
-
-        if not self._has_log_file():
-            self.__make_log_file()
+        if self.directory == '':
+            return os.path.dirname(os.path.abspath(__name__))
         else:
-            # remove last hyphen from name
-            if original_name_list[len(original_name_list) - 1] == '-':
-                del original_name_list[-1]
+            return self.directory
 
-            # join the list to get the original file name ( note, if user used numbers in filename, name will be wrong )
-            original_name = "".join(original_name_list)
+    def get_last_log_index(self):
+        """
+        Get a list of files, iterate through them and determine log index, set current_log_name if any found
+        :return:
+        """
 
-            if self.log_it_count > 0:
-                iterator_start = self.log_it_count
+        # if we don't reset here the counting goes out the window
+        self.files = []
+        self.log_it_count = 0
+
+        # self.set_log_count()
+        # self.set_log_index()
+
+        for x in os.listdir(self.determine_path()):
+
+            if self.date_first is True:
+
+                if re.match(r".*" + self.os_date + "-" + self.name + "." + self.file_ext, x) and not (x in self.files):
+                    self.log_it_count += 1
+
+                if re.match(r".*" + self.os_date + "-" + self.name + "-[0-9]+" + "." + self.file_ext, x) and not (x in self.files):
+                    self.files.append(x)
+                    nums = re.findall("[0-9]+", x)
+                    self.last_log_index = int(nums[-1])
+                    self.log_it_count += 1
             else:
-                iterator_start = self.start_log_from
+                if re.match(r".*" + self.name + '-' + self.os_date + "." + self.file_ext, x) and not (x in self.files):
+                    self.log_it_count += 1
 
-            for i in range(iterator_start, (self.max_files_in_day + 1)):
-                self.name = original_name + '-' + str(i)
-                # look for an existing log file
-                if self._has_log_file() is True:
-                    # check it's size
-                    if self.file_size_ok() is True:
-                        # we have a file to write to, end loop
-                        break
-                else:
-                    # set the range start count
-                    self.log_it_count = i
-                    # make new log file
-                    self.__make_log_file()
-                    break
+                if re.match(r".*" + self.name + "-[0-9]+" + '-' + self.os_date + "." + self.file_ext, x) and not (x in self.files):
+                    self.files.append(x)
+                    nums = re.findall("[0-9]+", x)
+                    self.last_log_index = int(nums[0])
+                    self.log_it_count += 1
 
-                if self.max_files_in_day == i:
-                    raise ValueError('max log files limit reached for the day!')
+        if len(self.files) is 0:
+            return False
+        else:
+            self.current_log_name = self.files[-1]
+            return True
 
     def init(self):
+        """
+        Check for log file and create one if none found wjen object is initialised
+        :return:
+        """
+
         self.__check_path()
         # no file , make it and state date created
         if not self._has_log_file():
-            self.make_new_file()
+            self.__make_log_file()
