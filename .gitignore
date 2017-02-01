@@ -94,5 +94,5 @@ ENV/
 # ini
 *.ini
 
-# txt
-*.txt
+# logs folder
+logs
